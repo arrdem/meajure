@@ -1,5 +1,9 @@
 # Meajure
 
+<a href="http://clojars.org/me.arrdem/meajure">
+	<img src="http://clojars.org/me.arrdem/meajure/latest-version.svg" />
+</a>
+
 A Clojure library which provides rudimentary math with units
 capabilities. What makes meajure different from other units libraries?
 There are already several good ones:
