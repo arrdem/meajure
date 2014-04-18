@@ -67,16 +67,25 @@ math operations that affect exponents?
 user> (require '[clojure.algo.generic.math-functions
                  :refer [pow sqrt]])
 nil
+
 user> (sqrt (make-unit 3.3))
 #meajure.UnitValue{:val 1.816590212458495, :units {}}
+
 user> (sqrt (make-unit 5000 :meters 2))
 #meajure.UnitValue{:val 70.71067811865476, :units {:meters 1N}}
+
 user> (sqrt (make-unit 16 :meters 3 :seconds 1))
 #meajure.UnitValue{:val 4.0, :units {:seconds 1/2, :meters 3/2}}
+```
+
+```Clojure
 user> (pow (make-unit 16 :meters 3 :seconds 1) 2)
 #meajure.UnitValue{:val 256.0, :units {:seconds 2, :meters 6}}
+
 user> (pow (make-unit 16 :meters 3 :seconds 1) 2.2)
-#meajure.UnitValue{:val 445.7218884076158, :units {:seconds 2.2, :meters 6.6000000000000005}}
+#meajure.UnitValue{:val 445.7218884076158,
+                   :units {:seconds 2.2,
+				            :meters 6.6000000000000005}}
 ```
 
 How on earth you'd contrive a power of 2.2 I have no idea, but if you
