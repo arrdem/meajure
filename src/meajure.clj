@@ -46,7 +46,7 @@
 (defn to-scalar
   [n]
   {:pre [(has-units? n)]}
-  {:val n})
+  (:val n))
 
 (defn simplify [x]
   {:pre [(has-units? x)]}
