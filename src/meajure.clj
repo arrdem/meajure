@@ -148,16 +148,6 @@
 (defmethod round meajure.UnitValue [x]
   (update-in x [:val] round))
 
-;; TODO: ponder
-;; (defmethod log meajure.UnitValue [x]
-;;   (as-> x v
-;;         (update-in v [:val] log)
-;;         (update-in v [:units]
-;;                    (fn [mapping]
-;;                      (->> (for [[k v] mapping]
-;;                             [k (/ v Math/E)])
-;;                           (into {}))))))
-
 (defmethod pow [meajure.UnitValue java.lang.Number] [x n]
   (-> x
       (update-in [:val] pow n)
@@ -175,6 +165,7 @@
                    (->> (for [[k v] mapping]
                           [k (/ v 2)])
                         (into {}))))))
+
 
 ;; Implement comparisons
 ;;--------------------------------------------------------------------
