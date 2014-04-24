@@ -125,11 +125,13 @@
 
 (defmethod / [java.lang.Number meajure.UnitValue]
   [x y]
-  (assoc y :val (/ x (:val y))))
+  (assoc y
+    :val (/ x (:val y))))
 
 (defmethod / [meajure.UnitValue java.lang.Number]
   [x y]
-  (assoc x :val (/ (:val x) y)))
+  (assoc x
+    :val (/ (:val x) y)))
 
 
 ;; Other math ops which are trivially meaningful
