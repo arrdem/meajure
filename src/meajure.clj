@@ -112,7 +112,8 @@
 
 (defmethod * [meajure.UnitValue java.lang.Number]
   [x y]
-  (assoc x :val (* (:val x) y)))
+  (assoc x
+    :val (* (:val x) y)))
 
 (defmethod / [meajure.UnitValue meajure.UnitValue]
   [x y]
@@ -124,11 +125,13 @@
 
 (defmethod / [java.lang.Number meajure.UnitValue]
   [x y]
-  (assoc y :val (/ x (:val y))))
+  (assoc y
+    :val (/ x (:val y))))
 
 (defmethod / [meajure.UnitValue java.lang.Number]
   [x y]
-  (assoc x :val (/ (:val x) y)))
+  (assoc x
+    :val (/ (:val x) y)))
 
 
 ;; Other math ops which are trivially meaningful
@@ -144,16 +147,6 @@
 
 (defmethod round meajure.UnitValue [x]
   (update-in x [:val] round))
-
-;; TODO: ponder
-;; (defmethod log meajure.UnitValue [x]
-;;   (as-> x v
-;;         (update-in v [:val] log)
-;;         (update-in v [:units]
-;;                    (fn [mapping]
-;;                      (->> (for [[k v] mapping]
-;;                             [k (/ v Math/E)])
-;;                           (into {}))))))
 
 (defmethod pow [meajure.UnitValue java.lang.Number] [x n]
   (-> x
@@ -172,6 +165,7 @@
                    (->> (for [[k v] mapping]
                           [k (/ v 2)])
                         (into {}))))))
+
 
 ;; Implement comparisons
 ;;--------------------------------------------------------------------
