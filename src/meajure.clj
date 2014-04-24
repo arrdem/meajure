@@ -112,7 +112,8 @@
 
 (defmethod * [meajure.UnitValue java.lang.Number]
   [x y]
-  (assoc x :val (* (:val x) y)))
+  (assoc x
+    :val (* (:val x) y)))
 
 (defmethod / [meajure.UnitValue meajure.UnitValue]
   [x y]
