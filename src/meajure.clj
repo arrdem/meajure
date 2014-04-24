@@ -120,7 +120,10 @@
   (-> x
       (assoc
           :val (/ (:val x) (:val y))
-          :units (merge-with - (:units x) (:units y)))
+          :units (merge-with + (:units x)
+                             (reduce (fn [m [k v]]
+                                       (assoc m k (* v -1)))
+                                     {} (:units y))))
       simplify))
 
 (defmethod / [java.lang.Number meajure.UnitValue]
