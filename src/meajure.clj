@@ -66,11 +66,10 @@
 (defrecord UnitValue [val units]
   Object
   (toString [this]
-    (format "#meajure/unit [%s %s]"
+    (format "#meajure/unit [%s%s]"
             (:val this)
             (->> (:units this)
-                 (map (fn [[k v]] (str k " " v)))
-                 (interpose " ")
+                 (map (fn [[k v]] (str ", " k " " v)))
                  (apply str)))))
 
 (defmethod print-method UnitValue [o ^java.io.Writer w]
