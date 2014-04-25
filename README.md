@@ -5,8 +5,9 @@
 </a>
 
 A Clojure library which provides rudimentary math with units
-capabilities. What makes meajure different from other units libraries?
-There are already several good ones:
+capabilities. The name is entirely [gtrak](http://github.com/gtrak)'s
+fault. What makes meajure different from other units libraries?  There
+are already several good ones:
 
  - [minderbinder](https://github.com/fogus/minderbinder)
  - [frinj](https://github.com/martintrojer/frinj/)
