@@ -14,9 +14,67 @@
   (:refer-clojure :exclude [- + / *]))
 
 
+;; Exponent helpers
+;;--------------------------------------------------------------------
+(def exponent-map
+  {:yotta 1.0E24
+   :Y     1.0E24
+   :zetta 1.0E21
+   :Z     1.0E21
+   :exa   1.0E18
+   :E     1.0E18
+   :peta  1.0E15
+   :P     1.0E15
+   :tera  1.0E12
+   :T     1.0E12
+   :giga  1.0E9
+   :G     1.0E9
+   :mega  1.0E6
+   :M     1.0E6
+   :kilo  1.0E3
+   :k     1.0E3
+   :hecto 1.0E2
+   :h     1.0E2
+   :deca  1.0E1
+   :da    1.0E1
+   ;; --------------
+   :deci  1.0E-1
+   :d     1.0E-1
+   :centi 1.0E-2
+   :c     1.0E-2
+   :milli 1.0E-3
+   :m     1.0E-3
+   :micro 1.0E-6
+   :μ     1.0E-6
+   :u     1.0E-6
+   :nano  1.0E-9
+   :n     1.0E-9
+   :pico  1.0E-12
+   :p     1.0E-12
+   :femto 1.0E-15
+   :f     1.0E-15
+   :atto  1.0E-18
+   :a     1.0E-18
+   :zepto 1.0E-21
+   :z     1.0E-21
+   :yocto 1.0E-24
+   :y     1.0E-24
+   })
+
 ;; Math with units
-;;------------------------------------------------------------------------------
-(defrecord UnitValue [val units])
+;;--------------------------------------------------------------------
+(defrecord UnitValue [val units]
+  Object
+  (toString [this]
+    (format "#meajure/unit [%s %s]"
+            (:val this)
+            (->> (:units this)
+                 (map (fn [[k v]] (str k " " v)))
+                 (interpose " ")
+                 (apply str)))))
+
+(defmethod print-method UnitValue [o ^java.io.Writer w]
+  (.write w (.toString o)))
 
 (defn make-unit
   "λ Numeric → [Object → Numeric]+ → UnitValue
@@ -27,6 +85,14 @@
   (->UnitValue v (->> kvs
                       (partition 2)
                       (reduce (partial apply assoc) {}))))
+
+(defn parse-unit
+  [[base & opts]]
+  (let [[opts pow]
+        (if (contains? exponent-map (first opts))
+          [(rest opts) (get exponent-map (first opts))]
+          [opts 1])]
+    (apply make-unit (* base pow) opts)))
 
 (defn elimimate-zeros [{:keys [units] :as v}]
   (reduce (fn [x k]
