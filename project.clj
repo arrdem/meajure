@@ -1,4 +1,4 @@
-(defproject me.arrdem/meajure "1.1.0"
+(defproject me.arrdem/meajure "1.2.0"
   :description "A Clojure math with units library"
   :url "http://github.com/arrdem/meajure"
   :license {:name "Eclipse Public License"
