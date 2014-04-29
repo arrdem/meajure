@@ -22,9 +22,9 @@ designed for unit tracking.
 user> (require '[clojure.algo.generic.arithmetic
                  :refer [+ - / *]])
 user> (require 'meajure)
-user> (+ #meajure/unit [3 :feet 1]
-         #meajure/unit [2 :feet 1])
-#meajure/unit [5 :feet 1]
+user> (+ #meajure/unit [3 :feet]
+         #meajure/unit [2 :feet])
+#meajure/unit [5, :feet]
 ```
 
 Right, so as one would expect, addition between values with the same
@@ -33,8 +33,8 @@ same units is also supported. What happens if we try to do something
 funky and mix units in simple arithmetic?
 
 ```Clojure
-user> (+ #meajure/unit [3 :feet 1]
-         #meajure/unit [2 :meters 1])
+user> (+ #meajure/unit [3 :feet]
+         #meajure/unit [2 :meters])
 AssertionError Assert failed: (units-equal? x y)
 ```
 
@@ -46,19 +46,19 @@ do. Meajure does not support implicit conversions.
 Okay, but what about multiplication? How are those operations defined?
 
 ```Clojure
-user> (* #meajure/unit [3 :feet 1]
-         #meajure/unit [2 :feet 1])
-#meajure/unit [6 :feet 2]
+user> (* #meajure/unit [3 :feet]
+         #meajure/unit [2 :feet])
+#meajure/unit [6, :feet 2]
 ```
 
 Awesome! Meajure allows for unit exponentiation... but what about
 negative exponents and other numeric cases?
 
 ```Clojure
-user> (* #meajure/unit [1 :doge 1]
-         #meajure/unit [(/ 127 10000000) :doge -1 :btc 1]
-         #meajure/unit [600 :usd 1 :btc -1])
-#meajure/unit [381/50000 :usd 1]
+user> (* #meajure/unit [1 :doge]
+         #meajure/unit [(/ 127 10000000) :doge -1 :btc]
+         #meajure/unit [600 :usd :btc -1])
+#meajure/unit [381/50000, :usd]
 ```
 
 Sweet... unit canceling and negaitve powers work... what about other
@@ -73,10 +73,10 @@ user> (sqrt #meajure/unit [3.3])
 #meajure/unit [1.816590212458495]
 
 user> (sqrt #meajure/unit [5000 :meters 2])
-#meajure/unit [70.71067811865476 :meters 1N]
+#meajure/unit [70.71067811865476, :meters 1N]
 
 user> (sqrt #meajure/unit [16 :meters 3 :seconds 1])
-#meajure/unit [4.0 :seconds 1/2 :meters 3/2]
+#meajure/unit [4.0, :seconds 1/2, :meters 3/2]
 ```
 
 ```Clojure
@@ -100,6 +100,33 @@ Other math operations such as logarithms and trig functions are not
 well defined in terms of the units of the result, and not supported by
 default. However thanks to the open nature of multimethods they are
 trivial to implement.
+
+The reader literal syntax for meajure units also provides support for
+common powers of ten. For example..
+
+```Clojure
+user> #meajure/unit [3 :kilo :doge]
+#meajure/unit [3000.0, :doge]
+user> #meajure/unit [3 :giga :ton :tnt]
+#meajure/unit [3.0E9, :tnt, :ton]
+```
+
+This composes with normal units just like you'd expect
+
+```Clojure
+user> #meajure/unit [16 :tera :feet 2]
+#meajure/unit [1.6E13, :feet 2]
+```
+
+Unfortunately this comes with the caviat that SI prefixes cannot be
+used as name of the _first_ type. For instance, this is defined to be
+invalid, because `:tera` is reserved to mean the SI prefix when it
+occurs in the first sequential type exponent position.
+
+```Clojure
+user> #meajure/unit [16 :tera 2]
+Exception Invalid parser state! Check unit format!
+```
 
 ## License
 

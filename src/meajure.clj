@@ -17,48 +17,50 @@
 ;; Exponent helpers
 ;;--------------------------------------------------------------------
 (def exponent-map
-  {:yotta 1.0E24
-   :Y     1.0E24
-   :zetta 1.0E21
-   :Z     1.0E21
-   :exa   1.0E18
-   :E     1.0E18
-   :peta  1.0E15
-   :P     1.0E15
-   :tera  1.0E12
-   :T     1.0E12
-   :giga  1.0E9
-   :G     1.0E9
-   :mega  1.0E6
-   :M     1.0E6
-   :kilo  1.0E3
-   :k     1.0E3
-   :hecto 1.0E2
-   :h     1.0E2
-   :deca  1.0E1
-   :da    1.0E1
+  {:yotta   1.0E24
+   :Y       1.0E24
+   :zetta   1.0E21
+   :Z       1.0E21
+   :exa     1.0E18
+   :E       1.0E18
+   :peta    1.0E15
+   :P       1.0E15
+   :tera    1.0E12
+   :T       1.0E12
+   :giga    1.0E9
+   :G       1.0E9
+   :mega    1.0E6
+   :M       1.0E6
+   :kilo    1.0E3
+   :k       1.0E3
+   :hecto   1.0E2
+   :h       1.0E2
+   :deca    1.0E1
+   :da      1.0E1
    ;; --------------
-   :deci  1.0E-1
-   :d     1.0E-1
-   :centi 1.0E-2
-   :c     1.0E-2
-   :milli 1.0E-3
-   :m     1.0E-3
-   :micro 1.0E-6
-   :μ     1.0E-6
-   :u     1.0E-6
-   :nano  1.0E-9
-   :n     1.0E-9
-   :pico  1.0E-12
-   :p     1.0E-12
-   :femto 1.0E-15
-   :f     1.0E-15
-   :atto  1.0E-18
-   :a     1.0E-18
-   :zepto 1.0E-21
-   :z     1.0E-21
-   :yocto 1.0E-24
-   :y     1.0E-24
+   :deci    1.0E-1
+   :d       1.0E-1
+   :centi   1.0E-2
+   :c       1.0E-2
+   :milli   1.0E-3
+   :m       1.0E-3
+   :micro   1.0E-6
+   :μ       1.0E-6
+   :u       1.0E-6
+   :satoshi 1.0E-8
+   :s       1.0E-8
+   :nano    1.0E-9
+   :n       1.0E-9
+   :pico    1.0E-12
+   :p       1.0E-12
+   :femto   1.0E-15
+   :f       1.0E-15
+   :atto    1.0E-18
+   :a       1.0E-18
+   :zepto   1.0E-21
+   :z       1.0E-21
+   :yocto   1.0E-24
+   :y       1.0E-24
    })
 
 ;; Math with units
@@ -66,33 +68,81 @@
 (defrecord UnitValue [val units]
   Object
   (toString [this]
-    (format "#meajure/unit [%s %s]"
-            (:val this)
-            (->> (:units this)
-                 (map (fn [[k v]] (str k " " v)))
-                 (interpose " ")
-                 (apply str)))))
+    (->> (:units this)
+         (map (fn [[k v]]
+                (str ", " k
+                     (if (contains? #{1, 1.0} v)
+                       "" (str " " v)))))
+         (apply str)
+         (format "#meajure/unit [%s%s]"
+                 (:val this)))))
 
 (defmethod print-method UnitValue [o ^java.io.Writer w]
   (.write w (.toString o)))
 
 (defn make-unit
-  "λ Numeric → [Object → Numeric]+ → UnitValue
+  "λ Numeric → [Object → Numeric]* → UnitValue
 
   Helper for nicely building UnitValues"
   [v & kvs]
-  {:pre [(even? (count kvs))]}
-  (->UnitValue v (->> kvs
-                      (partition 2)
-                      (reduce (partial apply assoc) {}))))
+  {:pre [(or (empty? kvs)
+             (even? (count kvs)))]}
+  (->> kvs
+       (partition 2)
+       (reduce (partial apply assoc) {})
+       (->UnitValue v)))
 
 (defn parse-unit
-  [[base & opts]]
-  (let [[opts pow]
-        (if (contains? exponent-map (first opts))
-          [(rest opts) (get exponent-map (first opts))]
-          [opts 1])]
-    (apply make-unit (* base pow) opts)))
+  "Parses a unit vector, being a sequence matching this pattern
+  [numeric-base power-of-ten? ((keyword expr)|keyword)+]
+
+  The single arity case is the entry point, the double arity case is an
+  implementation detail used to implement the ((keyword expr)|keyword)+
+  pattern.
+
+  Warning:
+    This parser will misbehave if a unit type in the first position
+    collides with a power of 10 term. For instance, this will misbehave:
+
+    [1 :T 4]
+
+    The parser reads this as 1 Terra, and then fails to match the 4 as a
+    unit to a power.
+
+  Examples:
+    [1 :doge]                     → [1 :doge 1]
+    [100 :feet 2]                 → [100 :feet 2]
+    [100 :kilo :metre :second -1] → [100000 :metre 1 :second -1]
+  "
+
+  ([[base & opts]]
+     (if (contains? exponent-map (first opts))
+       (parse-unit (make-unit (* (get exponent-map (first opts))
+                                 base))
+                   (rest opts))
+       (parse-unit base opts)))
+
+  ([acc opts]
+     (let [[k v & more] opts]
+       (cond (empty? opts)
+             acc
+
+             (and (keyword? k)
+                  (or (number? v)
+                      (list? v)))
+             (recur (* acc
+                       (make-unit 1 k (eval v)))
+                    more)
+             
+             (keyword? k)
+             (recur (* acc
+                       (make-unit 1 k 1))
+                    (rest opts))
+
+             true
+             (throw (Exception.
+                     (str "Invalid parser state! Check unit format! "
+                          [acc k v more])))))))
 
 (defn elimimate-zeros [{:keys [units] :as v}]
   (reduce (fn [x k]
