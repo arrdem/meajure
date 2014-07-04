@@ -21,7 +21,7 @@ designed for unit tracking.
 ```Clojure
 user> (require '[clojure.algo.generic.arithmetic
                  :refer [+ - / *]])
-user> (require 'meajure)
+user> (require 'meajure.core)
 user> (+ #meajure/unit [3 :feet]
          #meajure/unit [2 :feet])
 #meajure/unit [5, :feet]
