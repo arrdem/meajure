@@ -6,7 +6,7 @@
             or automatic conversion, it simply provides unit tracking
             through algebraic operations."}
 
-  meajure
+  meajure.core
   (:require [clojure.algo.generic
              [arithmetic :refer :all]
              [comparison :as c]
@@ -151,16 +151,16 @@
           v (keys units)))
 
 (defn scalar? [x]
-  (and (number? (:val x))
-       (empty? (:units x))))
+  (or (number? x)
+      (and (number? (:val x))
+           (empty? (:units x)))))
 
 (defn has-units? [x]
   (or (instance? UnitValue x)
       (and (map? x)
            (:val x))))
 
-(defn to-scalar
-  [n]
+(defn to-scalar [n]
   {:pre [(has-units? n)]}
   (:val n))
 
@@ -178,40 +178,40 @@
 
 ;; Addition operations... units must be equal or illegal
 ;;--------------------------------------------------------------------
-(defmethod + [meajure.UnitValue meajure.UnitValue]
+(defmethod + [UnitValue UnitValue]
   [x y]
   {:pre [(units-equal? x y)]}
   (-> x
       (update-in [:val] + (:val y))
       (simplify)))
 
-(defmethod + [java.lang.Number meajure.UnitValue]
+(defmethod + [java.lang.Number UnitValue]
   [x y]
   (assert false "addition with scalars and units is illegal!"))
 
-(defmethod + [meajure.UnitValue java.lang.Number]
+(defmethod + [UnitValue java.lang.Number]
   [x y]
   (assert false "addition with scalars and units is illegal!"))
 
-(defmethod - [meajure.UnitValue meajure.UnitValue]
+(defmethod - [UnitValue UnitValue]
   [x y]
   {:pre [(units-equal? x y)]}
   (-> x
       (update-in [:val] - (:val y))
       (simplify)))
 
-(defmethod - [java.lang.Number meajure.UnitValue]
+(defmethod - [java.lang.Number UnitValue]
   [x y]
   (assert false "subtraction with scalars and units is illegal!"))
 
-(defmethod - [meajure.UnitValue java.lang.Number]
+(defmethod - [UnitValue java.lang.Number]
   [x y]
   (assert false "subtraction with scalars and units is illegal!"))
 
 
 ;; Multiplicative operations
 ;;--------------------------------------------------------------------
-(defmethod * [meajure.UnitValue meajure.UnitValue]
+(defmethod * [UnitValue UnitValue]
   [x y]
   (-> x
       (assoc
@@ -221,17 +221,17 @@
                              (:units y)))
       simplify))
 
-(defmethod * [java.lang.Number meajure.UnitValue]
+(defmethod * [java.lang.Number UnitValue]
   [x y]
   (assoc y
     :val (* x (:val y))))
 
-(defmethod * [meajure.UnitValue java.lang.Number]
+(defmethod * [UnitValue java.lang.Number]
   [x y]
   (assoc x
     :val (* (:val x) y)))
 
-(defmethod / [meajure.UnitValue meajure.UnitValue]
+(defmethod / [UnitValue UnitValue]
   [x y]
   (-> x
       (assoc
@@ -242,12 +242,12 @@
                                      {} (:units y))))
       simplify))
 
-(defmethod / [java.lang.Number meajure.UnitValue]
+(defmethod / [java.lang.Number UnitValue]
   [x y]
   (assoc y
     :val (/ x (:val y))))
 
-(defmethod / [meajure.UnitValue java.lang.Number]
+(defmethod / [UnitValue java.lang.Number]
   [x y]
   (assoc x
     :val (/ (:val x) y)))
@@ -255,19 +255,19 @@
 
 ;; Other math ops which are trivially meaningful
 ;;--------------------------------------------------------------------
-(defmethod abs meajure.UnitValue [x]
+(defmethod abs UnitValue [x]
   (update-in x [:val] abs))
 
-(defmethod ceil meajure.UnitValue [x]
+(defmethod ceil UnitValue [x]
   (update-in x [:val] ceil))
 
-(defmethod floor meajure.UnitValue [x]
+(defmethod floor UnitValue [x]
   (update-in x [:val] floor))
 
-(defmethod round meajure.UnitValue [x]
+(defmethod round UnitValue [x]
   (update-in x [:val] round))
 
-(defmethod pow [meajure.UnitValue java.lang.Number] [x n]
+(defmethod pow [UnitValue java.lang.Number] [x n]
   (-> x
       (update-in [:val] pow n)
       (update-in [:units]
@@ -276,7 +276,7 @@
                           [k (* v n)])
                         (into {}))))))
 
-(defmethod sqrt meajure.UnitValue [x]
+(defmethod sqrt UnitValue [x]
   (-> x
       (update-in [:val] sqrt)
       (update-in [:units]
@@ -288,36 +288,36 @@
 
 ;; Implement comparisons
 ;;--------------------------------------------------------------------
-(defmethod c/pos? meajure.UnitValue [x]
+(defmethod c/pos? UnitValue [x]
   (c/pos? (to-scalar x)))
 
-(defmethod c/neg? meajure.UnitValue [x]
+(defmethod c/neg? UnitValue [x]
   (c/neg? (to-scalar x)))
 
-(defmethod c/zero? meajure.UnitValue [x]
+(defmethod c/zero? UnitValue [x]
   (c/zero? (to-scalar x)))
 
-(defmethod c/= [meajure.UnitValue meajure.UnitValue] [x y]
+(defmethod c/= [UnitValue UnitValue] [x y]
   {:pre [(units-equal? x y)]}
   (c/= (to-scalar x)
        (to-scalar y)))
 
-(defmethod c/> [meajure.UnitValue meajure.UnitValue] [x y]
+(defmethod c/> [UnitValue UnitValue] [x y]
   {:pre [(units-equal? x y)]}
   (c/> (to-scalar x)
        (to-scalar y)))
 
-(defmethod c/< [meajure.UnitValue meajure.UnitValue] [x y]
+(defmethod c/< [UnitValue UnitValue] [x y]
   {:pre [(units-equal? x y)]}
   (c/< (to-scalar x)
        (to-scalar y)))
 
-(defmethod c/>= [meajure.UnitValue meajure.UnitValue] [x y]
+(defmethod c/>= [UnitValue UnitValue] [x y]
   {:pre [(units-equal? x y)]}
   (c/>= (to-scalar x)
        (to-scalar y)))
 
-(defmethod c/<= [meajure.UnitValue meajure.UnitValue] [x y]
+(defmethod c/<= [UnitValue UnitValue] [x y]
   {:pre [(units-equal? x y)]}
   (c/<= (to-scalar x)
        (to-scalar y)))

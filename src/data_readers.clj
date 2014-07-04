@@ -1,1 +1,1 @@
-{meajure/unit meajure/parse-unit}
+{meajure/unit meajure.core/parse-unit}

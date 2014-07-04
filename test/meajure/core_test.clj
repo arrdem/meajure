@@ -1,5 +1,5 @@
-(ns meajure-test
-  (:require [meajure :refer :all]
+(ns meajure.core-test
+  (:require [meajure.core :refer :all]
             [clojure.algo.generic
              [arithmetic :refer :all]
              [comparison :as c]
